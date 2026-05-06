@@ -34,8 +34,8 @@ export default function StreakBadge({ streak, compact = false }: Props) {
 
     fireScale.value = withRepeat(
       withSequence(
-        withTiming(1.15, { duration: 600, easing: Easing.inOut(Easing.sine) }),
-        withTiming(1.0,  { duration: 600, easing: Easing.inOut(Easing.sine) }),
+        withTiming(1.15, { duration: 600, easing: Easing.inOut(Easing.sin) }),
+        withTiming(1.0,  { duration: 600, easing: Easing.inOut(Easing.sin) }),
       ),
       -1,
       true
