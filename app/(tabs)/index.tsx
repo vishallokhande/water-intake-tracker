@@ -121,7 +121,7 @@ export default function DashboardScreen() {
   const [showUndo, setShowUndo]                 = useState(false)
   const [milestoneMsg, setMilestoneMsg]         = useState<string | null>(null)
 
-  const undoTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const undoTimer    = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const ringBounce   = useSharedValue(1)
   const scoreScale   = useSharedValue(1)
   const milestoneAnim = useSharedValue(0)
