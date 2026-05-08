@@ -112,7 +112,7 @@ export default function LandingScreen() {
             style={({ pressed }) => [s.headerCta, pressed && { opacity: 0.82, transform: [{ scale: 0.97 }] }]}
           >
             <LinearGradient colors={[ACCENT, '#0077ff']} style={s.headerCtaGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Text style={s.headerCtaText}>{header.getStarted}</Text>
+              <Text style={s.headerCtaText}>{header.getStarted.render()}</Text>
             </LinearGradient>
           </Pressable>
         </View>
@@ -126,9 +126,9 @@ export default function LandingScreen() {
           <Text style={s.dropEmoji}>💧</Text>
         </Animated.View>
         <Text style={s.heroTitle}>{APP_NAME}</Text>
-        <Text style={s.heroTagline}>{hero.tagline}</Text>
+        <Text style={s.heroTagline}>{hero.tagline.render()}</Text>
         <Text style={s.heroDesc}>
-          {hero.description}
+          {hero.description.render()}
         </Text>
       </Animated.View>
 
@@ -140,8 +140,8 @@ export default function LandingScreen() {
               <Text style={{ fontSize: 18 }}>{feat.icon}</Text>
             </View>
             <View style={s.featureTextWrap}>
-              <Text style={s.featureTitle}>{feat.title}</Text>
-              <Text style={s.featureDesc}>{feat.desc}</Text>
+              <Text style={s.featureTitle}>{feat.title.render()}</Text>
+              <Text style={s.featureDesc}>{feat.desc.render()}</Text>
             </View>
           </View>
         ))}
@@ -154,10 +154,10 @@ export default function LandingScreen() {
           onPress={() => router.push('/(onboarding)')}
         >
           <LinearGradient colors={[ACCENT, '#0077ff']} style={s.mainCtaGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-            <Text style={s.mainCtaText}>{footer.cta}</Text>
+            <Text style={s.mainCtaText}>{footer.cta.render()}</Text>
           </LinearGradient>
         </Pressable>
-        <Text style={s.legal}>{footer.legal}</Text>
+        <Text style={s.legal}>{footer.legal.render()}</Text>
       </Animated.View>
     </View>
   )
