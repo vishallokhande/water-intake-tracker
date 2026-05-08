@@ -64,7 +64,7 @@ export default function OnboardingScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { setProfile } = useHydration()
-  const content = useIntlayer('Onboarding')
+  const content = useIntlayer('onboarding')
 
   const [step, setStep]           = useState(0)
   const [gender, setGender]       = useState<Gender>('other')
@@ -103,8 +103,8 @@ export default function OnboardingScreen() {
 
     // Step 1 — Gender
     <Animated.View key="gender" entering={FadeInDown.springify()} style={styles.stepContent}>
-      <Text style={styles.stepTitle}>{content.steps.gender.title.render()}</Text>
-      <Text style={styles.stepSub}>{content.steps.gender.subtitle.render()}</Text>
+      <Text style={styles.stepTitle}>{content.steps.gender.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.gender.subtitle}</Text>
       <View style={styles.optList}>
         {[
           { value: 'male',   ...content.steps.gender.options.male,   icon: '♂️' },
@@ -118,8 +118,8 @@ export default function OnboardingScreen() {
 
     // Step 2 — Weight
     <Animated.View key="weight" entering={FadeInDown.springify()} style={styles.stepContent}>
-      <Text style={styles.stepTitle}>{content.steps.weight.title.render()}</Text>
-      <Text style={styles.stepSub}>{content.steps.weight.subtitle.render()}</Text>
+      <Text style={styles.stepTitle}>{content.steps.weight.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.weight.subtitle}</Text>
       <View style={styles.weightCenter}>
         <View style={styles.weightInputBox}>
           <TextInput
@@ -169,8 +169,8 @@ export default function OnboardingScreen() {
 
     // Step 4 — Climate + Goal preview
     <Animated.View key="climate" entering={FadeInDown.springify()} style={styles.stepContent}>
-      <Text style={styles.stepTitle}>{content.steps.climate.title.render()}</Text>
-      <Text style={styles.stepSub}>{content.steps.climate.subtitle.render()}</Text>
+      <Text style={styles.stepTitle}>{content.steps.climate.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.climate.subtitle}</Text>
       <View style={styles.optList}>
         {[
           { value: 'arctic',    ...content.steps.climate.options.arctic,    icon: '❄️' },

@@ -97,7 +97,7 @@ function PackageCard({
 export default function UpgradeScreen() {
   const insets = useSafeAreaInsets()
   const { isPremium, isLoading, offerings, purchase, restore, refresh, customerInfo } = useSubscription()
-  const content = useIntlayer('Upgrade')
+  const content = useIntlayer('upgrade')
 
   const [selectedPkg,       setSelectedPkg]       = useState<PurchasesPackage | null>(null)
   const [purchasing,        setPurchasing]         = useState(false)

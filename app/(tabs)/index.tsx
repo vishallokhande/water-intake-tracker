@@ -218,13 +218,13 @@ export default function DashboardScreen() {
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View>
           <Text style={styles.greeting}>{timeGreeting}</Text>
-          <Text style={styles.headerTitle}>{header.title.render()}</Text>
+          <Text style={styles.headerTitle}>{header.title}</Text>
         </View>
         <View style={styles.headerRight}>
           <Animated.View style={scoreStyle}>
             <View style={styles.scoreBadge}>
               <Text style={styles.scoreNum}>{hydrationScore}</Text>
-              <Text style={styles.scoreLabel}>{header.scoreLabel.render()}</Text>
+              <Text style={styles.scoreLabel}>{header.scoreLabel}</Text>
             </View>
           </Animated.View>
           {streak > 0 && <StreakBadge streak={streak} compact />}
@@ -255,20 +255,20 @@ export default function DashboardScreen() {
 
         {/* ── Stats strip ──────────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.statsRow}>
-          <StatCard label={stats.today.render()} value={`${todayEffectiveTotal}ml`} icon="💧" highlight />
-          <StatCard label={stats.goal.render()} value={`${dailyGoal}ml`} icon="🎯" />
-          <StatCard label={stats.remaining.render()} value={`${Math.max(0, dailyGoal - todayEffectiveTotal)}ml`} icon="⏳" />
+          <StatCard label={stats.today} value={`${todayEffectiveTotal}ml`} icon="💧" highlight />
+          <StatCard label={stats.goal} value={`${dailyGoal}ml`} icon="🎯" />
+          <StatCard label={stats.remaining} value={`${Math.max(0, dailyGoal - todayEffectiveTotal)}ml`} icon="⏳" />
         </Animated.View>
 
         {/* ── Beverage selector ─────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(380).springify()}>
-          <Text style={styles.sectionLabel}>{sections.beverageType.render()}</Text>
+          <Text style={styles.sectionLabel}>{sections.beverageType}</Text>
           <BeverageSelector selected={selectedBeverage} onSelect={setSelectedBeverage} />
         </Animated.View>
 
         {/* ── Quick log buttons ─────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(440).springify()} style={styles.quickLogSection}>
-          <Text style={styles.sectionLabel}>{sections.quickLog.render()}</Text>
+          <Text style={styles.sectionLabel}>{sections.quickLog}</Text>
           <View style={styles.quickLogRow}>
             {QUICK_LOG_PRESETS.map(ml => (
               <QuickLogButton
@@ -283,7 +283,7 @@ export default function DashboardScreen() {
             <Pressable onPress={() => setShowCustom(true)}>
               <View style={styles.customBtn}>
                 <Ionicons name="add" size={22} color={ACCENT} />
-                <Text style={styles.customBtnText}>{buttons.custom.render()}</Text>
+                <Text style={styles.customBtnText}>{buttons.custom}</Text>
               </View>
             </Pressable>
           </View>
@@ -292,7 +292,7 @@ export default function DashboardScreen() {
         {/* ── Today's log list ──────────────────────────────────────────────── */}
         {logs.length > 0 ? (
           <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.logsSection}>
-            <Text style={styles.sectionLabel}>{sections.todaysLog.render()}</Text>
+            <Text style={styles.sectionLabel}>{sections.todaysLog}</Text>
             <View style={styles.logList}>
               {[...logs].reverse().slice(0, 8).map((log, i) => {
                 const time = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })

@@ -1,7 +1,7 @@
 import { t, type DeclarationContent } from 'intlayer'
 
 const UpgradeContent = {
-  key: 'Upgrade',
+  key: 'upgrade',
   content: {
     header: {
       eyebrow: t({ en: 'PREMIUM' }),

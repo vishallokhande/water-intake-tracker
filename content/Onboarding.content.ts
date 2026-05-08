@@ -1,7 +1,7 @@
 import { t, type DeclarationContent } from 'intlayer'
 
 const OnboardingContent = {
-  key: 'Onboarding',
+  key: 'onboarding',
   content: {
     steps: {
       welcome: {
