@@ -33,7 +33,7 @@ No boilerplate to write — just build your features.
 | **Typography** | Inter via `@expo-google-fonts` — `<Text>` auto-applies correct weight, fixes Android bug |
 | **Component library** | Button (5 variants), Card, StatusBadge, SettingsRow, TextInputField, AppModal |
 | **Navigation** | Expo Router file-based routing — add a file, get a screen |
-| **i18n** | i18next with English locale ready — drop a JSON file to add a language |
+| **i18n** | Intlayer with English locale ready — add a `.content.ts` file to add translations |
 | **RevenueCat webhook** | Supabase edge function syncs `plan_type` on every subscription event |
 
 ---
@@ -52,7 +52,7 @@ No boilerplate to write — just build your features.
 | Subscriptions | react-native-purchases | ^9.15 |
 | Error tracking | @sentry/react-native | ~7.11 |
 | Analytics | posthog-react-native | ^4.39 |
-| i18n | i18next + react-i18next | ^26 / ^17 |
+| i18n | intlayer + react-intlayer | ^8.9 |
 | Animations | react-native-reanimated | 4.2.1 |
 | Icons | lucide-react-native + @expo/vector-icons | latest |
 | Testing | jest + jest-expo | ^29 / ^55 |
@@ -296,7 +296,8 @@ lib/
   analytics.ts         PostHog wrapper with typed event names
   mockData.ts          Placeholder data — used as placeholderData in hooks
   utils.ts             getInitials, formatDate, adjustBrightness, clamp, etc.
-  i18n.ts              i18next init + language switching
+content/
+  *.content.ts         📂 Dictionaries managed via Intlayer
 
 components/
   ui/

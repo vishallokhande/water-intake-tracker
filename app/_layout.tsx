@@ -34,6 +34,7 @@ import { ToastProvider } from '@/contexts/ToastContext'
 import OfflineBanner from '@/components/OfflineBanner'
 import { Text } from '@/components/ui/Text'
 import { BG } from '@/lib/theme'
+import { IntlayerProvider } from 'react-native-intlayer'
 
 // ─── Error boundary ───────────────────────────────────────────────────────────
 
@@ -118,11 +119,12 @@ function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <HydrationProvider>
-          <ToastProvider>
-            <SafeAreaProvider>
-              <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG }}>
+      <IntlayerProvider>
+        <QueryClientProvider client={queryClient}>
+          <HydrationProvider>
+            <ToastProvider>
+              <SafeAreaProvider>
+                <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG }}>
                 <BottomSheetModalProvider>
                   <StatusBar
                     style="light"
@@ -165,6 +167,7 @@ function RootLayout() {
           </ToastProvider>
         </HydrationProvider>
       </QueryClientProvider>
+      </IntlayerProvider>
     </ErrorBoundary>
   )
 }
