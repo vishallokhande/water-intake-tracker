@@ -29,7 +29,7 @@ import LiquidRing from '@/components/LiquidRing'
 import QuickLogButton from '@/components/QuickLogButton'
 import BeverageSelector from '@/components/BeverageSelector'
 import StreakBadge from '@/components/StreakBadge'
-import { useIntlayer } from 'react-native-intlayer'
+import { useIntlayer } from 'react-intlayer'
 
 import { useHydration } from '@/contexts/HydrationContext'
 import { getMotivationMessage, getMilestoneMessage, type BeverageType } from '@/lib/hydrationEngine'
@@ -117,7 +117,7 @@ export default function DashboardScreen() {
     progressPercent, hydrationScore, streak,
     logs, logIntake, undoLast, lastLogAnimation,
   } = useHydration()
-  const { header, greetings, stats, sections, buttons, toasts } = useIntlayer('dashboard')
+  const { header, greetings, stats, sections, buttons, toasts, motivation, milestones, beverages } = useIntlayer('dashboard')
 
   const [selectedBeverage, setSelectedBeverage] = useState<BeverageType>('water')
   const [showCustom, setShowCustom]             = useState(false)
@@ -147,7 +147,17 @@ export default function DashboardScreen() {
     undoTimer.current = setTimeout(() => setShowUndo(false), 4000)
 
     // Milestone check
-    const msg = getMilestoneMessage(streak)
+    const msg = (() => {
+      if (streak === 3)   return milestones.ms3
+      if (streak === 7)   return milestones.ms7
+      if (streak === 14)  return milestones.ms14
+      if (streak === 30)  return milestones.ms30
+      if (streak === 60)  return milestones.ms60
+      if (streak === 100) return milestones.ms100
+      if (streak === 365) return milestones.ms365
+      return null
+    })()
+
     if (msg) {
       setMilestoneMsg(msg)
       milestoneAnim.value = withSequence(
@@ -157,7 +167,7 @@ export default function DashboardScreen() {
       )
       setTimeout(() => setMilestoneMsg(null), 3000)
     }
-  }, [lastLogAnimation])
+  }, [lastLogAnimation, streak, milestones])
 
   const ringStyle  = useAnimatedStyle(() => ({ transform: [{ scale: ringBounce.value }] }))
   const scoreStyle = useAnimatedStyle(() => ({ transform: [{ scale: scoreScale.value }] }))
@@ -175,8 +185,17 @@ export default function DashboardScreen() {
     await undoLast()
     setShowUndo(false)
   }, [undoLast])
+  const motivationText = (() => {
+    if (progressPercent === 0)   return motivation.m0
+    if (progressPercent < 15)    return motivation.m15
+    if (progressPercent < 30)    return motivation.m30
+    if (progressPercent < 50)    return motivation.m50
+    if (progressPercent < 70)    return motivation.m70
+    if (progressPercent < 85)    return motivation.m85
+    if (progressPercent < 100)   return motivation.m100
+    return motivation.mDone
+  })()
 
-  const motivationText = getMotivationMessage(progressPercent)
   const timeGreeting   = (() => {
     const h = new Date().getHours()
     if (h < 12) return greetings.morning

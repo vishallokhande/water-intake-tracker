@@ -13,6 +13,8 @@ import Animated, {
   Easing,
   FadeInDown,
 } from 'react-native-reanimated'
+import { Ionicons } from '@expo/vector-icons'
+import { useIntlayer } from 'react-intlayer'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Text } from '@/components/ui/Text'
 import { ACCENT, ACCENT_DIM, ACCENT_BORDER, BG, BORDER, SURFACE2 } from '@/lib/theme'
@@ -20,17 +22,9 @@ import { APP_NAME, APP_TAGLINE } from '@/lib/constants'
 
 const { width: SW, height: SH } = Dimensions.get('window')
 
-const FEATURES = [
-  { icon: '💧', title: 'One-Tap Logging',    desc: 'Log water and beverages in a single tap' },
-  { icon: '🎯', title: 'AI Goal Calculator', desc: 'Science-backed goals for your body & lifestyle' },
-  { icon: '📊', title: 'Weekly Heatmap',     desc: 'Beautiful visual history of your hydration' },
-  { icon: '🔥', title: 'Streak Tracking',    desc: 'Stay motivated with daily streak milestones' },
-  { icon: '⚡', title: 'Smart Reminders',    desc: 'Adaptive reminders that know when you need water' },
-  { icon: '🏆', title: 'Multi-Beverage',     desc: 'Track coffee, tea, juice and more with smart multipliers' },
-]
-
 export default function LandingScreen() {
   const insets = useSafeAreaInsets()
+  const { header, hero, features, footer } = useIntlayer('landing')
 
   const headerY       = useSharedValue(-20)
   const headerOpacity = useSharedValue(0)
@@ -118,7 +112,7 @@ export default function LandingScreen() {
             style={({ pressed }) => [s.headerCta, pressed && { opacity: 0.82, transform: [{ scale: 0.97 }] }]}
           >
             <LinearGradient colors={[ACCENT, '#0077ff']} style={s.headerCtaGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-              <Text style={s.headerCtaText}>Get Started</Text>
+              <Text style={s.headerCtaText}>{header.getStarted}</Text>
             </LinearGradient>
           </Pressable>
         </View>
@@ -132,16 +126,15 @@ export default function LandingScreen() {
           <Text style={s.dropEmoji}>💧</Text>
         </Animated.View>
         <Text style={s.heroTitle}>{APP_NAME}</Text>
-        <Text style={s.heroTagline}>{APP_TAGLINE}</Text>
+        <Text style={s.heroTagline}>{hero.tagline}</Text>
         <Text style={s.heroDesc}>
-          A premium hydration tracker that learns your body, climate, and activity level
-          to calculate your perfect daily water goal — then keeps you on track.
+          {hero.description}
         </Text>
       </Animated.View>
 
       {/* ── Features grid ── */}
       <Animated.View style={[s.featuresWrap, featuresStyle]}>
-        {FEATURES.map((feat, i) => (
+        {features.map((feat: any, i: number) => (
           <View key={i} style={s.featureRow}>
             <View style={s.featureIconWrap}>
               <Text style={{ fontSize: 18 }}>{feat.icon}</Text>
@@ -161,14 +154,15 @@ export default function LandingScreen() {
           onPress={() => router.push('/(onboarding)')}
         >
           <LinearGradient colors={[ACCENT, '#0077ff']} style={s.mainCtaGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-            <Text style={s.mainCtaText}>🚀 Start Your Hydration Journey</Text>
+            <Text style={s.mainCtaText}>{footer.cta}</Text>
           </LinearGradient>
         </Pressable>
-        <Text style={s.legal}>Free · No account required · Works offline</Text>
+        <Text style={s.legal}>{footer.legal}</Text>
       </Animated.View>
     </View>
   )
 }
+
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: BG },

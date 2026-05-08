@@ -2,27 +2,26 @@
  * HydroFlow — Multi-step onboarding flow.
  * 5 steps: Welcome → Gender → Weight → Activity → Climate + Goal Preview
  */
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import {
   View, ScrollView, StyleSheet, Pressable, TextInput,
-  Dimensions, FlatList, Platform,
+  Dimensions, Platform,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, {
-  FadeInDown, FadeInUp, FadeInRight, FadeOutLeft,
-  useSharedValue, useAnimatedStyle, withSpring,
+  FadeInDown, withSpring, useSharedValue, useAnimatedStyle
 } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
-
+import { useIntlayer } from 'react-intlayer'
 import { Text } from '@/components/ui/Text'
 import { useHydration } from '@/contexts/HydrationContext'
 import { calculateDailyGoal } from '@/lib/hydrationEngine'
 import type { Gender, ActivityLevel, Climate } from '@/lib/hydrationEngine'
 import {
   ACCENT, ACCENT_DIM, ACCENT_BORDER,
-  BG, SURFACE2, SURFACE3, BORDER, TEXT_TERTIARY,
+  BG, BORDER,
 } from '@/lib/theme'
 
 const { width: SW } = Dimensions.get('window')
@@ -61,36 +60,11 @@ function OptionCard<T extends string>({
   )
 }
 
-// ── Steps ──────────────────────────────────────────────────────────────────────
-
-const GENDERS: { value: Gender; label: string; desc: string; icon: string }[] = [
-  { value: 'male',   label: 'Male',   desc: 'Biological males need ~10% more',     icon: '♂️' },
-  { value: 'female', label: 'Female', desc: 'Biological females need ~10% less',    icon: '♀️' },
-  { value: 'other',  label: 'Other',  desc: 'We\'ll use a balanced baseline',        icon: '⚧' },
-]
-
-const ACTIVITIES: { value: ActivityLevel; label: string; desc: string; icon: string }[] = [
-  { value: 'sedentary', label: 'Sedentary',  desc: 'Mostly sitting, desk job',        icon: '🪑' },
-  { value: 'light',     label: 'Light',      desc: '1–3 days of light exercise/week', icon: '🚶' },
-  { value: 'moderate',  label: 'Moderate',   desc: '3–5 days of moderate exercise',   icon: '🏃' },
-  { value: 'active',    label: 'Very Active', desc: 'Daily intense workouts',          icon: '💪' },
-  { value: 'athlete',   label: 'Athlete',    desc: 'Professional / twice daily',      icon: '🏅' },
-]
-
-const CLIMATES: { value: Climate; label: string; desc: string; icon: string }[] = [
-  { value: 'arctic',    label: 'Cold',      desc: 'Below 10°C / 50°F',              icon: '❄️' },
-  { value: 'temperate', label: 'Temperate', desc: '10–25°C / 50–77°F',              icon: '🌤️' },
-  { value: 'warm',      label: 'Warm',      desc: '25–32°C / 77–90°F',              icon: '☀️' },
-  { value: 'hot',       label: 'Hot',       desc: '32–40°C / 90–104°F',             icon: '🌡️' },
-  { value: 'tropical',  label: 'Tropical',  desc: 'Hot + high humidity',             icon: '🌴' },
-]
-
-// ── Main onboarding component ──────────────────────────────────────────────────
-
 export default function OnboardingScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { setProfile } = useHydration()
+  const content = useIntlayer('Onboarding')
 
   const [step, setStep]           = useState(0)
   const [gender, setGender]       = useState<Gender>('other')
@@ -116,13 +90,11 @@ export default function OnboardingScreen() {
       <View style={styles.heroEmoji}>
         <Text style={{ fontSize: 80 }}>💧</Text>
       </View>
-      <Text style={styles.stepTitle}>Welcome to{'\n'}HydroFlow</Text>
-      <Text style={styles.stepSub}>
-        Your personal hydration OS. We'll calculate a science-backed daily water goal just for you in 60 seconds.
-      </Text>
+      <Text style={styles.stepTitle}>{content.steps.welcome.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.welcome.subtitle}</Text>
       <View style={styles.featureList}>
-        {['🎯 Personalized daily goal', '📊 Weekly & monthly heatmap', '🔥 Streak tracking', '💧 Multi-beverage support'].map(f => (
-          <View key={f} style={styles.featureItem}>
+        {content.steps.welcome.features.map((f: string, i: number) => (
+          <View key={i} style={styles.featureItem}>
             <Text style={styles.featureText}>{f}</Text>
           </View>
         ))}
@@ -131,19 +103,23 @@ export default function OnboardingScreen() {
 
     // Step 1 — Gender
     <Animated.View key="gender" entering={FadeInDown.springify()} style={styles.stepContent}>
-      <Text style={styles.stepTitle}>What's your{'\n'}biological sex?</Text>
-      <Text style={styles.stepSub}>This helps us calculate your baseline hydration need.</Text>
+      <Text style={styles.stepTitle}>{content.steps.gender.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.gender.subtitle}</Text>
       <View style={styles.optList}>
-        {GENDERS.map(g => (
-          <OptionCard key={g.value} {...g} selected={gender === g.value} onSelect={setGender} />
+        {[
+          { value: 'male',   ...content.steps.gender.options.male,   icon: '♂️' },
+          { value: 'female', ...content.steps.gender.options.female, icon: '♀️' },
+          { value: 'other',  ...content.steps.gender.options.other,  icon: '⚧' },
+        ].map(g => (
+          <OptionCard key={g.value} {...g as any} selected={gender === g.value} onSelect={setGender} />
         ))}
       </View>
     </Animated.View>,
 
     // Step 2 — Weight
     <Animated.View key="weight" entering={FadeInDown.springify()} style={styles.stepContent}>
-      <Text style={styles.stepTitle}>What's your{'\n'}body weight?</Text>
-      <Text style={styles.stepSub}>The most accurate factor in calculating your daily water needs.</Text>
+      <Text style={styles.stepTitle}>{content.steps.weight.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.weight.subtitle}</Text>
       <View style={styles.weightCenter}>
         <View style={styles.weightInputBox}>
           <TextInput
@@ -155,9 +131,9 @@ export default function OnboardingScreen() {
             placeholder="70"
             selectTextOnFocus
           />
-          <Text style={styles.weightBigUnit}>kg</Text>
+          <Text style={styles.weightBigUnit}>{content.steps.weight.unit}</Text>
         </View>
-        <Text style={styles.weightHint}>Tap the number to edit</Text>
+        <Text style={styles.weightHint}>{content.steps.weight.hint}</Text>
       </View>
       <View style={styles.weightPresets}>
         {[50, 60, 70, 80, 90, 100].map(w => (
@@ -166,7 +142,7 @@ export default function OnboardingScreen() {
             style={[styles.wPreset, weightText === String(w) && { borderColor: ACCENT, backgroundColor: ACCENT_DIM }]}
             onPress={() => setWeight(String(w))}
           >
-            <Text style={[styles.wPresetText, weightText === String(w) && { color: ACCENT }]}>{w}kg</Text>
+            <Text style={[styles.wPresetText, weightText === String(w) && { color: ACCENT }]}>{w}{content.steps.weight.unit}</Text>
           </Pressable>
         ))}
       </View>
@@ -174,12 +150,18 @@ export default function OnboardingScreen() {
 
     // Step 3 — Activity
     <Animated.View key="activity" entering={FadeInDown.springify()} style={styles.stepContent}>
-      <Text style={styles.stepTitle}>How active{'\n'}are you?</Text>
-      <Text style={styles.stepSub}>Active people need significantly more water.</Text>
+      <Text style={styles.stepTitle}>{content.steps.activity.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.activity.subtitle}</Text>
       <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
         <View style={styles.optList}>
-          {ACTIVITIES.map(a => (
-            <OptionCard key={a.value} {...a} selected={activity === a.value} onSelect={setActivity} />
+          {[
+            { value: 'sedentary', ...content.steps.activity.options.sedentary, icon: '🪑' },
+            { value: 'light',     ...content.steps.activity.options.light,     icon: '🚶' },
+            { value: 'moderate',  ...content.steps.activity.options.moderate,  icon: '🏃' },
+            { value: 'active',    ...content.steps.activity.options.active,    icon: '💪' },
+            { value: 'athlete',   ...content.steps.activity.options.athlete,   icon: '🏅' },
+          ].map(a => (
+            <OptionCard key={a.value} {...a as any} selected={activity === a.value} onSelect={setActivity} />
           ))}
         </View>
       </ScrollView>
@@ -187,11 +169,17 @@ export default function OnboardingScreen() {
 
     // Step 4 — Climate + Goal preview
     <Animated.View key="climate" entering={FadeInDown.springify()} style={styles.stepContent}>
-      <Text style={styles.stepTitle}>What's your{'\n'}climate like?</Text>
-      <Text style={styles.stepSub}>Hot environments significantly increase water loss.</Text>
+      <Text style={styles.stepTitle}>{content.steps.climate.title}</Text>
+      <Text style={styles.stepSub}>{content.steps.climate.subtitle}</Text>
       <View style={styles.optList}>
-        {CLIMATES.map(c => (
-          <OptionCard key={c.value} {...c} selected={climate === c.value} onSelect={setClimate} />
+        {[
+          { value: 'arctic',    ...content.steps.climate.options.arctic,    icon: '❄️' },
+          { value: 'temperate', ...content.steps.climate.options.temperate, icon: '🌤️' },
+          { value: 'warm',      ...content.steps.climate.options.warm,      icon: '☀️' },
+          { value: 'hot',       ...content.steps.climate.options.hot,       icon: '🌡️' },
+          { value: 'tropical',  ...content.steps.climate.options.tropical,  icon: '🌴' },
+        ].map(c => (
+          <OptionCard key={c.value} {...c as any} selected={climate === c.value} onSelect={setClimate} />
         ))}
       </View>
 
@@ -202,9 +190,11 @@ export default function OnboardingScreen() {
           style={styles.goalCardGrad}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.goalCardTitle}>Your Daily Goal</Text>
+          <Text style={styles.goalCardTitle}>{content.steps.goalPreview.title}</Text>
           <Text style={styles.goalCardValue}>{previewGoal}ml</Text>
-          <Text style={styles.goalCardSub}>≈ {Math.round(previewGoal / 250)} glasses of water</Text>
+          <Text style={styles.goalCardSub}>
+            {content.steps.goalPreview.subtitle.render({ count: Math.round(previewGoal / 250) })}
+          </Text>
         </LinearGradient>
       </View>
     </Animated.View>,
@@ -228,7 +218,9 @@ export default function OnboardingScreen() {
       </View>
 
       <View style={styles.stepLabel}>
-        <Text style={styles.stepNum}>Step {step + 1} of {totalSteps}</Text>
+        <Text style={styles.stepNum}>
+          {content.navigation.stepLabel.render({ current: step + 1, total: totalSteps })}
+        </Text>
       </View>
 
       <ScrollView
@@ -242,11 +234,12 @@ export default function OnboardingScreen() {
       <View style={[styles.navRow, { paddingBottom: insets.bottom + 20 }]}>
         {step > 0 ? (
           <Pressable style={styles.backBtn} onPress={() => setStep(s => s - 1)}>
-            <Text style={styles.backBtnText}>← Back</Text>
+            <Text style={styles.backBtnText}>{content.navigation.back}</Text>
           </Pressable>
         ) : <View style={{ flex: 1 }} />}
 
         <Pressable
+          style={{ flex: 2 }}
           onPress={() => {
             if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
             if (step < totalSteps - 1) setStep(s => s + 1)
@@ -259,7 +252,7 @@ export default function OnboardingScreen() {
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
           >
             <Text style={styles.nextBtnText}>
-              {step < totalSteps - 1 ? 'Continue →' : '🚀 Start HydroFlow'}
+              {step < totalSteps - 1 ? content.navigation.continue : content.navigation.finish}
             </Text>
           </LinearGradient>
         </Pressable>
@@ -267,7 +260,6 @@ export default function OnboardingScreen() {
     </View>
   )
 }
-
 
 const styles = StyleSheet.create({
   root: { flex: 1 },

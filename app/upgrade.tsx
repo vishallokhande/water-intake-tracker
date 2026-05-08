@@ -21,6 +21,7 @@ import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useIntlayer } from 'react-intlayer'
 import { Text } from '@/components/ui/Text'
 import { AlertModal } from '@/components/ui/AppModal'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -30,15 +31,6 @@ import { track } from '@/lib/analytics'
 import { adjustBrightness } from '@/lib/utils'
 import * as Haptics from 'expo-haptics'
 import { ACCENT, ACCENT_DIM, ACCENT_BORDER, BG, SURFACE, BORDER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY } from '@/lib/theme'
-
-// 🎨 BRAND: Customize your feature list
-const PRO_FEATURES = [
-  { icon: 'infinite-outline',       label: 'Unlimited access to all features' },
-  { icon: 'rocket-outline',         label: 'Priority processing & speed' },
-  { icon: 'shield-checkmark-outline', label: 'Ad-free experience' },
-  { icon: 'headset-outline',        label: 'Priority support (24h response)' },
-  { icon: 'star-outline',           label: 'Early access to new features' },
-]
 
 function FeatureItem({ icon, label }: { icon: string; label: string }) {
   return (
@@ -52,9 +44,9 @@ function FeatureItem({ icon, label }: { icon: string; label: string }) {
 }
 
 function PackageCard({
-  pkg, isSelected, onSelect, savingsPct,
+  pkg, isSelected, onSelect, savingsPct, content
 }: {
-  pkg: PurchasesPackage; isSelected: boolean; onSelect: () => void; savingsPct: number | null
+  pkg: PurchasesPackage; isSelected: boolean; onSelect: () => void; savingsPct: number | null; content: any
 }) {
   const product  = pkg.product
   const isYearly = pkg.packageType === 'ANNUAL' || pkg.identifier.toLowerCase().includes('year')
@@ -79,7 +71,7 @@ function PackageCard({
       {isYearly && savingsPct && (
         <View style={[s.bestValueBadge, { backgroundColor: ACCENT_DIM }]}>
           <Text style={[s.bestValueText, { color: ACCENT }]}>
-            Best Value · {savingsPct}% off
+            {content.packages.bestValue.render({ pct: savingsPct })}
           </Text>
         </View>
       )}
@@ -88,14 +80,14 @@ function PackageCard({
           {isSelected && <View style={[s.radioInner, { backgroundColor: ACCENT }]} />}
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={s.packageLabel}>{isYearly ? 'Yearly' : 'Monthly'}</Text>
+          <Text style={s.packageLabel}>{isYearly ? content.packages.yearly : content.packages.monthly}</Text>
           {isYearly && perMonthStr && (
-            <Text style={s.packageNote}>{perMonthStr} · billed annually</Text>
+            <Text style={s.packageNote}>{perMonthStr} · {content.packages.billedAnnually}</Text>
           )}
         </View>
         <View style={{ alignItems: 'flex-end' }}>
           <Text style={s.packagePrice}>{priceStr}</Text>
-          <Text style={s.packagePer}>{isYearly ? '/ year' : '/ month'}</Text>
+          <Text style={s.packagePer}>{isYearly ? content.packages.perYear : content.packages.perMonth}</Text>
         </View>
       </View>
     </Pressable>
@@ -105,6 +97,7 @@ function PackageCard({
 export default function UpgradeScreen() {
   const insets = useSafeAreaInsets()
   const { isPremium, isLoading, offerings, purchase, restore, refresh, customerInfo } = useSubscription()
+  const content = useIntlayer('Upgrade')
 
   const [selectedPkg,       setSelectedPkg]       = useState<PurchasesPackage | null>(null)
   const [purchasing,        setPurchasing]         = useState(false)
@@ -129,6 +122,19 @@ export default function UpgradeScreen() {
   useEffect(() => {
     track('upgrade_page_viewed')
   }, [])
+
+  async function handleRedeemCode() {
+    track('redeem_code_tapped')
+    if (Platform.OS === 'ios') {
+      try { await Purchases.presentCodeRedemptionSheet() }
+      catch { Linking.openURL('https://apps.apple.com/redeem') }
+    } else {
+      waitingRef.current = true
+      setWaitingForRedeem(true)
+      const canUseMarket = await Linking.canOpenURL('market://redeem')
+      Linking.openURL(canUseMarket ? 'market://redeem' : 'https://play.google.com/redeem')
+    }
+  }
 
   const packages = offerings?.current?.availablePackages ?? []
 
@@ -158,7 +164,10 @@ export default function UpgradeScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         router.back()
       } else if (!result.cancelled) {
-        setModal({ title: 'Purchase failed', message: result.error ?? 'Something went wrong. Please try again.' })
+        setModal({
+          title: content.modals.purchaseFailed.title,
+          message: result.error ?? content.modals.purchaseFailed.message
+        })
       }
     } finally {
       setPurchasing(false)
@@ -174,30 +183,28 @@ export default function UpgradeScreen() {
       if (result.success) {
         await refresh()
         if (isPremium) {
-          setModal({ title: 'Purchases restored', message: 'Your subscription has been restored.' })
+          setModal({
+            title: content.modals.restored.title,
+            message: content.modals.restored.message
+          })
         } else {
-          setModal({ title: 'Nothing to restore', message: 'No active subscription found for this account.' })
+          setModal({
+            title: content.modals.nothingToRestore.title,
+            message: content.modals.nothingToRestore.message
+          })
         }
       } else {
-        setModal({ title: 'Restore failed', message: result.error ?? 'Something went wrong. Please try again.' })
+        setModal({
+          title: content.modals.restoreFailed.title,
+          message: result.error ?? content.modals.restoreFailed.message
+        })
       }
     } finally {
       setRestoring(false)
     }
   }
 
-  async function handleRedeemCode() {
-    track('redeem_code_tapped')
-    if (Platform.OS === 'ios') {
-      try { await Purchases.presentCodeRedemptionSheet() }
-      catch { Linking.openURL('https://apps.apple.com/redeem') }
-    } else {
-      waitingRef.current = true
-      setWaitingForRedeem(true)
-      const canUseMarket = await Linking.canOpenURL('market://redeem')
-      Linking.openURL(canUseMarket ? 'market://redeem' : 'https://play.google.com/redeem')
-    }
-  }
+  // ... (handleRedeemCode)
 
   const expiryMs  = customerInfo?.entitlements.active['premium']?.expirationDate
   const expiryDate = expiryMs
@@ -220,12 +227,9 @@ export default function UpgradeScreen() {
           <View style={[s.sparkleWrap, { backgroundColor: ACCENT_DIM }]}>
             <Ionicons name="sparkles" size={22} color={ACCENT} />
           </View>
-          <Text style={[s.eyebrow, { color: ACCENT }]}>PREMIUM</Text>
-          <Text style={s.title}>
-            {/* 🎨 BRAND: Update these */}
-            Unlock everything
-          </Text>
-          <Text style={s.subtitle}>Get full access to all pro features.</Text>
+          <Text style={[s.eyebrow, { color: ACCENT }]}>{content.header.eyebrow}</Text>
+          <Text style={s.title}>{content.header.title}</Text>
+          <Text style={s.subtitle}>{content.header.subtitle}</Text>
         </View>
 
         {isLoading ? (
@@ -238,65 +242,47 @@ export default function UpgradeScreen() {
                 <Ionicons name="checkmark" size={14} color="#fff" />
               </LinearGradient>
               <View>
-                <Text style={s.proActiveTitle}>You're on Pro</Text>
+                <Text style={s.proActiveTitle}>{content.active.title}</Text>
                 {expiryDate && (
                   <Text style={s.proActiveSub}>
-                    {willRenew ? `Renews ${expiryDate}` : `Expires ${expiryDate}`}
+                    {willRenew
+                      ? content.active.renews.render({ date: expiryDate })
+                      : content.active.expires.render({ date: expiryDate })}
                   </Text>
                 )}
               </View>
             </View>
             <View style={s.featureGrid}>
-              {PRO_FEATURES.map((f) => <FeatureItem key={f.label} icon={f.icon} label={f.label} />)}
+              {content.features.map((f: any, i: number) => <FeatureItem key={i} icon={f.icon} label={f.label} />)}
             </View>
-            <Pressable
-              onPress={() => Linking.openURL(
-                Platform.OS === 'ios'
-                  ? 'https://apps.apple.com/account/subscriptions'
-                  : 'https://play.google.com/store/account/subscriptions'
-              )}
-              style={s.manageBtn}
-            >
-              <Text style={s.manageBtnText}>Manage or cancel subscription →</Text>
-            </Pressable>
           </View>
         ) : (
           <>
-            {/* Feature card */}
             <View style={[s.proCard, { borderColor: ACCENT_BORDER }]}>
-              <LinearGradient
-                colors={[`${ACCENT}40`, `${ACCENT}08`, 'transparent']}
-                start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }}
-                style={StyleSheet.absoluteFillObject}
-              />
               <View style={s.proCardInner}>
-                <View style={[s.proPill, { backgroundColor: ACCENT }]}>
-                  <Ionicons name="sparkles" size={10} color="#fff" style={{ marginRight: 4 }} />
-                  <Text style={s.proPillText}>PRO</Text>
-                </View>
                 <View style={s.featureGrid}>
-                  {PRO_FEATURES.map((f) => <FeatureItem key={f.label} icon={f.icon} label={f.label} />)}
+                  {content.features.map((f: any, i: number) => <FeatureItem key={i} icon={f.icon} label={f.label} />)}
                 </View>
               </View>
             </View>
 
-            {/* Package selector */}
             {packages.length > 0 ? (
               <View style={s.packages}>
-                {packages.map((pkg) => (
+                {packages.map((pkg: PurchasesPackage) => (
                   <PackageCard
                     key={pkg.identifier}
                     pkg={pkg}
                     isSelected={(selectedPkg ?? defaultPkg)?.identifier === pkg.identifier}
                     onSelect={() => setSelectedPkg(pkg)}
                     savingsPct={savingsPct}
+                    content={content}
                   />
                 ))}
               </View>
             ) : (
               <View style={s.unavailable}>
                 <Text style={{ color: TEXT_TERTIARY, fontSize: 13, textAlign: 'center' }}>
-                  Subscription plans unavailable right now. Please try again later.
+                  {content.packages.unavailable}
                 </Text>
               </View>
             )}
@@ -315,7 +301,7 @@ export default function UpgradeScreen() {
                     ) : (
                       <>
                         <Ionicons name="sparkles" size={14} color="#fff" />
-                        <Text style={s.ctaText}>Unlock Pro</Text>
+                        <Text style={s.ctaText}>{content.cta.unlock}</Text>
                         <Ionicons name="arrow-forward" size={14} color="#fff" />
                       </>
                     )}
@@ -327,11 +313,11 @@ export default function UpgradeScreen() {
             {/* Free tier comparison */}
             <View style={s.freeRow}>
               <View>
-                <Text style={s.freeTierText}>Free</Text>
-                <Text style={s.freeDescText}>Limited access</Text>
+                <Text style={s.freeTierText}>{content.cta.freeTier}</Text>
+                <Text style={s.freeDescText}>{content.cta.freeDesc}</Text>
               </View>
               <View style={s.freeBadge}>
-                <Text style={s.freeBadgeText}>Current plan</Text>
+                <Text style={s.freeBadgeText}>{content.cta.currentPlan}</Text>
               </View>
             </View>
 
@@ -340,21 +326,20 @@ export default function UpgradeScreen() {
               <Pressable onPress={handleRestore} disabled={restoring || waitingForRedeem}>
                 {restoring
                   ? <ActivityIndicator size="small" color="rgba(255,255,255,0.3)" />
-                  : <Text style={s.footerLink}>Restore purchases</Text>
+                  : <Text style={s.footerLink}>{content.footer.restore}</Text>
                 }
               </Pressable>
               <Text style={s.footerDot}>·</Text>
               <Pressable onPress={handleRedeemCode} disabled={restoring || waitingForRedeem}>
                 {waitingForRedeem
                   ? <ActivityIndicator size="small" color="rgba(255,255,255,0.3)" />
-                  : <Text style={s.footerLink}>Redeem promo code</Text>
+                  : <Text style={s.footerLink}>{content.footer.redeem}</Text>
                 }
               </Pressable>
             </View>
 
             <Text style={s.legal}>
-              Subscriptions auto-renew unless cancelled at least 24 hours before the end of
-              the current period. Manage in your account settings.
+              {content.footer.legal}
             </Text>
           </>
         )}

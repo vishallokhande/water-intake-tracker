@@ -15,7 +15,7 @@ import {
   TEXT_SECONDARY, TEXT_TERTIARY, SUCCESS, ERROR, WARNING,
 } from '@/lib/theme'
 import * as Haptics from 'expo-haptics'
-import { useIntlayer } from 'react-native-intlayer'
+import { useIntlayer } from 'react-intlayer'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 const ACTIVITY_OPTIONS: { value: ActivityLevel; label: string; desc: string; icon: string }[] = [

@@ -35,15 +35,6 @@ export const BEVERAGE_MULTIPLIERS: Record<BeverageType, number> = {
   coffee: 0.60, // diuretic offset
 }
 
-export const BEVERAGE_LABELS: Record<BeverageType, string> = {
-  water:  'Water',
-  coffee: 'Coffee',
-  tea:    'Tea',
-  juice:  'Juice',
-  sports: 'Sports',
-  milk:   'Milk',
-}
-
 export const BEVERAGE_ICONS: Record<BeverageType, string> = {
   water:  '💧',
   coffee: '☕',
@@ -54,7 +45,6 @@ export const BEVERAGE_ICONS: Record<BeverageType, string> = {
 }
 
 // ── Daily goal calculator ──────────────────────────────────────────────────────
-
 const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
   sedentary: 0.85,
   light:     1.00,
@@ -130,32 +120,6 @@ export function getScoreColor(percent: number): string {
   return '#ff4757'
 }
 
-// ── Motivational microcopy ────────────────────────────────────────────────────
-
-export function getMotivationMessage(percent: number): string {
-  if (percent === 0)        return "Let's start your hydration journey! 🌊"
-  if (percent < 15)         return 'Every drop counts. Keep going! 💧'
-  if (percent < 30)         return 'Good start! You\'re building momentum 🚀'
-  if (percent < 50)         return 'Almost halfway there! Stay hydrated 💦'
-  if (percent < 70)         return 'Over halfway! Your body loves this 🌿'
-  if (percent < 85)         return 'So close! Push through the finish line 🏆'
-  if (percent < 100)        return 'Almost there! One more sip! ✨'
-  return 'Goal crushed! You\'re a hydration champion! 🎉'
-}
-
-export function getMilestoneMessage(streak: number): string | null {
-  const messages: Record<number, string> = {
-    3:   '3-day streak! You\'re building a great habit! 🔥',
-    7:   '1-week warrior! Your cells are cheering! 💪',
-    14:  '2 weeks strong! Pure dedication! ⚡',
-    30:  '30-day legend! You\'re unstoppable! 🏆',
-    60:  '60 days! You\'re a hydration master! 👑',
-    100: '100 days! Hall of fame level! 🌟',
-    365: '365 days! One full year! LEGENDARY! 🚀',
-  }
-  return messages[streak] ?? null
-}
-
 // ── Smart reminder timing ─────────────────────────────────────────────────────
 
 export interface ReminderSlot {
@@ -164,24 +128,33 @@ export interface ReminderSlot {
   label: string
 }
 
+/**
+ * Note: label in ReminderSlot is now just a placeholder or should be localized in the caller.
+ * Refactoring it to return just the ml left so the UI can construct the localized message.
+ */
+export interface SmartReminder {
+  hour: number
+  minute: number
+  mlLeft: number
+}
+
 export function getSmartReminders(
   currentMl: number,
   goalMl: number,
   wakeHour = 7,
   sleepHour = 23
-): ReminderSlot[] {
+): SmartReminder[] {
   const progressRatio = currentMl / goalMl
   const hoursLeft     = sleepHour - new Date().getHours()
   const mlLeft        = goalMl - currentMl
 
   if (progressRatio >= 1 || hoursLeft <= 0) return []
 
-  // How many reminders needed?
   const mlPerReminder = 250
   const count         = Math.min(8, Math.ceil(mlLeft / mlPerReminder))
   const interval      = Math.max(30, Math.floor((hoursLeft * 60) / count))
 
-  const slots: ReminderSlot[] = []
+  const slots: SmartReminder[] = []
   let cursor = new Date()
   cursor.setMinutes(cursor.getMinutes() + interval)
 
@@ -189,7 +162,7 @@ export function getSmartReminders(
     slots.push({
       hour:   cursor.getHours(),
       minute: cursor.getMinutes(),
-      label:  `Time to hydrate! ${mlLeft - i * mlPerReminder}ml to go`,
+      mlLeft: mlLeft - i * mlPerReminder,
     })
     cursor = new Date(cursor.getTime() + interval * 60_000)
     if (cursor.getHours() >= sleepHour) break
@@ -198,31 +171,57 @@ export function getSmartReminders(
   return slots
 }
 
-// ── Goal factor breakdown ─────────────────────────────────────────────────────
-
 export interface GoalFactor {
   label: string
   value: string
-  contribution: number // ml added or multiplied
+  contribution: number
 }
 
 export function getGoalFactors(profile: HydrationProfile): GoalFactor[] {
   const base = profile.weightKg * 35
   return [
     {
-      label: 'Body Weight',
+      label: 'Weight',
       value: `${profile.weightKg}kg`,
       contribution: Math.round(base),
     },
     {
-      label: 'Activity Level',
-      value: profile.activityLevel.charAt(0).toUpperCase() + profile.activityLevel.slice(1),
+      label: 'Activity',
+      value: profile.activityLevel,
       contribution: Math.round(base * (ACTIVITY_MULTIPLIERS[profile.activityLevel] - 1)),
     },
     {
       label: 'Climate',
-      value: profile.climate.charAt(0).toUpperCase() + profile.climate.slice(1),
+      value: profile.climate,
       contribution: CLIMATE_ADDITIONS[profile.climate],
     },
   ]
 }
+
+// ── Motivational microcopy ───────────────────────────────────────────────────
+
+export function getMotivationMessage(percent: number): string {
+  if (percent >= 100) return "You're a hydration hero! 🏆"
+  if (percent >= 80)  return "Almost there! Keep sipping. 💧"
+  if (percent >= 50)  return "Halfway point! You're doing great. 🌊"
+  if (percent >= 25)  return "Good start! Let's hit that goal. 🥛"
+  return "Time for some water! Your body will thank you. ✨"
+}
+
+export function getMilestoneMessage(streak: number): string | null {
+  if (streak === 3)  return "3-day streak! You're building a habit! 🔥"
+  if (streak === 7)  return "One whole week! Hydration master! 🏅"
+  if (streak === 30) return "30 days! You're officially a water god! 🌊"
+  if (streak > 0 && streak % 10 === 0) return `${streak} days in a row! Incredible! ⚡`
+  return null
+}
+
+export const BEVERAGE_LABELS: Record<BeverageType, string> = {
+  water:  'Water',
+  coffee: 'Coffee',
+  tea:    'Tea',
+  juice:  'Juice',
+  sports: 'Sports Drink',
+  milk:   'Milk',
+}
+
