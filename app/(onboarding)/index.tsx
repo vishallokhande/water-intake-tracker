@@ -193,7 +193,7 @@ export default function OnboardingScreen() {
           <Text style={styles.goalCardTitle}>{content.steps.goalPreview.title}</Text>
           <Text style={styles.goalCardValue}>{previewGoal}ml</Text>
           <Text style={styles.goalCardSub}>
-            {content.steps.goalPreview.subtitle.render({ count: Math.round(previewGoal / 250) })}
+            {(content.steps.goalPreview.subtitle as any)?.render?.({ count: Math.round(previewGoal / 250) }) ?? content.steps.goalPreview.subtitle}
           </Text>
         </LinearGradient>
       </View>
@@ -219,7 +219,7 @@ export default function OnboardingScreen() {
 
       <View style={styles.stepLabel}>
         <Text style={styles.stepNum}>
-          {content.navigation.stepLabel.render({ current: step + 1, total: totalSteps })}
+          {(content.navigation.stepLabel as any)?.render?.({ current: step + 1, total: totalSteps }) ?? content.navigation.stepLabel}
         </Text>
       </View>
 

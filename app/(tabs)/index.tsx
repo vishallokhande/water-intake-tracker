@@ -100,7 +100,7 @@ function CustomAmountModal({
 
         <Pressable style={styles.logBtn} onPress={handleSubmit}>
           <LinearGradient colors={[ACCENT, '#0077ff']} style={styles.logBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-            <Text style={styles.logBtnText}>{customModal.logButton.render({ value: value || '0' })}</Text>
+            <Text style={styles.logBtnText}>{(customModal.logButton as any)?.render?.({ value: value || '0' }) ?? customModal.logButton}</Text>
           </LinearGradient>
         </Pressable>
       </View>
@@ -334,7 +334,7 @@ export default function DashboardScreen() {
       {showUndo && (
         <View style={[styles.undoToast, { bottom: insets.bottom + 110 }]}>
           <Text style={styles.undoMsg}>
-            {lastLog ? toasts.amountLogged.render({ ml: lastLog.ml }) : toasts.logged}
+            {lastLog ? ((toasts.amountLogged as any)?.render?.({ ml: lastLog.ml }) ?? toasts.amountLogged) : toasts.logged}
           </Text>
           <Pressable onPress={handleUndo} style={styles.undoBtn}>
             <Text style={styles.undoBtnText}>{buttons.undo}</Text>

@@ -131,7 +131,7 @@ export default function SettingsScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.profileName}>{profileSection.name}</Text>
-              <Text style={styles.profileStat}>🔥 {profileSection.streak.render({ streak })} • ⚡ {profileSection.goal.render({ goal: dailyGoal })}</Text>
+              <Text style={styles.profileStat}>🔥 {(profileSection.streak as any)?.render?.({ streak }) ?? profileSection.streak} • ⚡ {(profileSection.goal as any)?.render?.({ goal: dailyGoal }) ?? profileSection.goal}</Text>
             </View>
           </LinearGradient>
         </Animated.View>
@@ -195,7 +195,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.goalPreviewTitle}>{recommendation.title}</Text>
               <Text style={styles.goalPreviewValue}>{previewGoal}{recommendation.unit}</Text>
-              <Text style={styles.goalPreviewSub}>{recommendation.glasses.render({ count: Math.round(previewGoal / 250) })}</Text>
+              <Text style={styles.goalPreviewSub}>{(recommendation.glasses as any)?.render?.({ count: Math.round(previewGoal / 250) }) ?? recommendation.glasses}</Text>
 
               <View style={styles.factorsRow}>
                 {factors.map(f => (

@@ -71,7 +71,7 @@ function PackageCard({
       {isYearly && savingsPct && (
         <View style={[s.bestValueBadge, { backgroundColor: ACCENT_DIM }]}>
           <Text style={[s.bestValueText, { color: ACCENT }]}>
-            {content.packages.bestValue.render({ pct: savingsPct })}
+            {(content.packages.bestValue as any)?.render?.({ pct: savingsPct }) ?? content.packages.bestValue}
           </Text>
         </View>
       )}
@@ -246,8 +246,8 @@ export default function UpgradeScreen() {
                 {expiryDate && (
                   <Text style={s.proActiveSub}>
                     {willRenew
-                      ? content.active.renews.render({ date: expiryDate })
-                      : content.active.expires.render({ date: expiryDate })}
+                      ? (content.active.renews as any)?.render?.({ date: expiryDate }) ?? content.active.renews
+                      : (content.active.expires as any)?.render?.({ date: expiryDate }) ?? content.active.expires}
                   </Text>
                 )}
               </View>
