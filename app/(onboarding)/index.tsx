@@ -93,7 +93,7 @@ export default function OnboardingScreen() {
       <Text style={styles.stepTitle}>{content.steps.welcome.title}</Text>
       <Text style={styles.stepSub}>{content.steps.welcome.subtitle}</Text>
       <View style={styles.featureList}>
-        {content.steps.welcome.features.map((f: string, i: number) => (
+        {Array.isArray(content.steps.welcome.features) && content.steps.welcome.features.map((f: string, i: number) => (
           <View key={i} style={styles.featureItem}>
             <Text style={styles.featureText}>{f}</Text>
           </View>

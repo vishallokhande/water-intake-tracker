@@ -134,7 +134,7 @@ export default function LandingScreen() {
 
       {/* ── Features grid ── */}
       <Animated.View style={[s.featuresWrap, featuresStyle]}>
-        {features.map((feat: any, i: number) => (
+        {Array.isArray(features) && features.map((feat: any, i: number) => (
           <View key={i} style={s.featureRow}>
             <View style={s.featureIconWrap}>
               <Text style={{ fontSize: 18 }}>{feat.icon}</Text>

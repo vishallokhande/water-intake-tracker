@@ -253,7 +253,7 @@ export default function UpgradeScreen() {
               </View>
             </View>
             <View style={s.featureGrid}>
-              {content.features.map((f: any, i: number) => <FeatureItem key={i} icon={f.icon} label={f.label} />)}
+              {Array.isArray(content.features) && content.features.map((f: any, i: number) => <FeatureItem key={i} icon={f.icon} label={f.label} />)}
             </View>
           </View>
         ) : (
@@ -261,14 +261,14 @@ export default function UpgradeScreen() {
             <View style={[s.proCard, { borderColor: ACCENT_BORDER }]}>
               <View style={s.proCardInner}>
                 <View style={s.featureGrid}>
-                  {content.features.map((f: any, i: number) => <FeatureItem key={i} icon={f.icon} label={f.label} />)}
+                  {Array.isArray(content.features) && content.features.map((f: any, i: number) => <FeatureItem key={i} icon={f.icon} label={f.label} />)}
                 </View>
               </View>
             </View>
 
             {packages.length > 0 ? (
               <View style={s.packages}>
-                {packages.map((pkg: PurchasesPackage) => (
+                {Array.isArray(packages) && packages.map((pkg: PurchasesPackage) => (
                   <PackageCard
                     key={pkg.identifier}
                     pkg={pkg}
