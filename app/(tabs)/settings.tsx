@@ -15,6 +15,7 @@ import {
   TEXT_SECONDARY, TEXT_TERTIARY, SUCCESS, ERROR, WARNING,
 } from '@/lib/theme'
 import * as Haptics from 'expo-haptics'
+import { useIntlayer } from 'react-native-intlayer'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 const ACTIVITY_OPTIONS: { value: ActivityLevel; label: string; desc: string; icon: string }[] = [
@@ -88,6 +89,7 @@ function ChipRow<T extends string>({
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets()
   const { profile, dailyGoal, streak, setProfile } = useHydration()
+  const { title, subtitle, profileSection, goalCalculator, recommendation, preferences, about, version: versionText } = useIntlayer('settings')
 
   const [weightText, setWeightText] = useState(String(profile.weightKg))
 
@@ -109,8 +111,8 @@ export default function SettingsScreen() {
         colors={['#020c18', '#041830']}
         style={[styles.header, { paddingTop: insets.top + 12 }]}
       >
-        <Text style={styles.title}>Settings</Text>
-        <Text style={styles.subtitle}>Personalize HydroFlow</Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
       </LinearGradient>
 
       <ScrollView
@@ -128,20 +130,20 @@ export default function SettingsScreen() {
               <Text style={{ fontSize: 32 }}>💧</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.profileName}>HydroFlow User</Text>
-              <Text style={styles.profileStat}>🔥 {streak} day streak • ⚡ {dailyGoal}ml/day goal</Text>
+              <Text style={styles.profileName}>{profileSection.name}</Text>
+              <Text style={styles.profileStat}>🔥 {profileSection.streak.render({ streak })} • ⚡ {profileSection.goal.render({ goal: dailyGoal })}</Text>
             </View>
           </LinearGradient>
         </Animated.View>
 
         {/* ── Goal calculator ──────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.section}>
-          <Text style={styles.sectionTitle}>💡 Smart Goal Calculator</Text>
-          <Text style={styles.sectionSub}>Adjusts your daily target based on your body and lifestyle.</Text>
+          <Text style={styles.sectionTitle}>{goalCalculator.title}</Text>
+          <Text style={styles.sectionSub}>{goalCalculator.description}</Text>
 
           {/* Weight */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Body Weight</Text>
+            <Text style={styles.fieldLabel}>{goalCalculator.weight}</Text>
             <View style={styles.weightRow}>
               <TextInput
                 value={weightText}
@@ -156,7 +158,7 @@ export default function SettingsScreen() {
 
           {/* Gender */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Biological Gender</Text>
+            <Text style={styles.fieldLabel}>{goalCalculator.gender}</Text>
             <ChipRow
               options={GENDER_OPTIONS}
               selected={profile.gender}
@@ -166,7 +168,7 @@ export default function SettingsScreen() {
 
           {/* Activity */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Activity Level</Text>
+            <Text style={styles.fieldLabel}>{goalCalculator.activity}</Text>
             <ChipRow
               options={ACTIVITY_OPTIONS}
               selected={profile.activityLevel}
@@ -176,7 +178,7 @@ export default function SettingsScreen() {
 
           {/* Climate */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Climate / Environment</Text>
+            <Text style={styles.fieldLabel}>{goalCalculator.climate}</Text>
             <ChipRow
               options={CLIMATE_OPTIONS}
               selected={profile.climate}
@@ -191,9 +193,9 @@ export default function SettingsScreen() {
               style={styles.goalPreviewGrad}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.goalPreviewTitle}>Recommended Daily Goal</Text>
-              <Text style={styles.goalPreviewValue}>{previewGoal}ml</Text>
-              <Text style={styles.goalPreviewSub}>≈ {Math.round(previewGoal / 250)} glasses of water</Text>
+              <Text style={styles.goalPreviewTitle}>{recommendation.title}</Text>
+              <Text style={styles.goalPreviewValue}>{previewGoal}{recommendation.unit}</Text>
+              <Text style={styles.goalPreviewSub}>{recommendation.glasses.render({ count: Math.round(previewGoal / 250) })}</Text>
 
               <View style={styles.factorsRow}>
                 {factors.map(f => (
@@ -212,27 +214,27 @@ export default function SettingsScreen() {
 
         {/* ── App preferences ──────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.section}>
-          <Text style={styles.sectionTitle}>⚙️ App Preferences</Text>
+          <Text style={styles.sectionTitle}>{preferences.title}</Text>
           <View style={styles.card}>
-            <SettingsRow icon="🔔" label="Smart Reminders" right={<Switch value={true} onValueChange={() => {}} thumbColor={ACCENT} trackColor={{ true: ACCENT_DIM, false: 'rgba(255,255,255,0.1)' }} />} />
-            <SettingsRow icon="📳" label="Haptic Feedback" right={<Switch value={true} onValueChange={() => {}} thumbColor={ACCENT} trackColor={{ true: ACCENT_DIM, false: 'rgba(255,255,255,0.1)' }} />} />
-            <SettingsRow icon="🌙" label="Dark Mode" right={<Switch value={true} onValueChange={() => {}} thumbColor={ACCENT} trackColor={{ true: ACCENT_DIM, false: 'rgba(255,255,255,0.1)' }} />} />
+            <SettingsRow icon="🔔" label={preferences.reminders} right={<Switch value={true} onValueChange={() => {}} thumbColor={ACCENT} trackColor={{ true: ACCENT_DIM, false: 'rgba(255,255,255,0.1)' }} />} />
+            <SettingsRow icon="📳" label={preferences.haptics} right={<Switch value={true} onValueChange={() => {}} thumbColor={ACCENT} trackColor={{ true: ACCENT_DIM, false: 'rgba(255,255,255,0.1)' }} />} />
+            <SettingsRow icon="🌙" label={preferences.darkMode} right={<Switch value={true} onValueChange={() => {}} thumbColor={ACCENT} trackColor={{ true: ACCENT_DIM, false: 'rgba(255,255,255,0.1)' }} />} />
           </View>
         </Animated.View>
 
         {/* ── About ──────────────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(380).springify()} style={styles.section}>
-          <Text style={styles.sectionTitle}>📱 About</Text>
+          <Text style={styles.sectionTitle}>{about.title}</Text>
           <View style={styles.card}>
-            <SettingsRow icon="📄" label="Privacy Policy" />
-            <SettingsRow icon="📋" label="Terms of Service" />
-            <SettingsRow icon="💬" label="Support" />
-            <SettingsRow icon="⭐" label="Rate HydroFlow" />
+            <SettingsRow icon="📄" label={about.privacy} />
+            <SettingsRow icon="📋" label={about.terms} />
+            <SettingsRow icon="💬" label={about.support} />
+            <SettingsRow icon="⭐" label={about.rate} />
           </View>
         </Animated.View>
 
         {/* Version */}
-        <Text style={styles.version}>HydroFlow v1.0.0 · Made with 💙</Text>
+        <Text style={styles.version}>{versionText}</Text>
       </ScrollView>
     </View>
   )

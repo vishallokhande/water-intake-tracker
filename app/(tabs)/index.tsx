@@ -29,6 +29,7 @@ import LiquidRing from '@/components/LiquidRing'
 import QuickLogButton from '@/components/QuickLogButton'
 import BeverageSelector from '@/components/BeverageSelector'
 import StreakBadge from '@/components/StreakBadge'
+import { useIntlayer } from 'react-native-intlayer'
 
 import { useHydration } from '@/contexts/HydrationContext'
 import { getMotivationMessage, getMilestoneMessage, type BeverageType } from '@/lib/hydrationEngine'
@@ -54,6 +55,7 @@ function CustomAmountModal({
   onClose: () => void
 }) {
   const [value, setValue] = useState('300')
+  const { customModal } = useIntlayer('dashboard')
 
   function handleSubmit() {
     const ml = parseInt(value, 10)
@@ -71,8 +73,8 @@ function CustomAmountModal({
       </Pressable>
       <View style={styles.modalSheet}>
         <View style={styles.modalHandle} />
-        <Text style={styles.modalTitle}>Custom Amount</Text>
-        <Text style={styles.modalSub}>How much did you drink?</Text>
+        <Text style={styles.modalTitle}>{customModal.title}</Text>
+        <Text style={styles.modalSub}>{customModal.subtitle}</Text>
 
         <View style={styles.inputRow}>
           <TextInput
@@ -84,7 +86,7 @@ function CustomAmountModal({
             placeholderTextColor="rgba(255,255,255,0.3)"
             placeholder="250"
           />
-          <Text style={styles.mlUnit}>ml</Text>
+          <Text style={styles.mlUnit}>{customModal.unit}</Text>
         </View>
 
         {/* Quick presets */}
@@ -98,7 +100,7 @@ function CustomAmountModal({
 
         <Pressable style={styles.logBtn} onPress={handleSubmit}>
           <LinearGradient colors={[ACCENT, '#0077ff']} style={styles.logBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-            <Text style={styles.logBtnText}>💧 Log {value || '0'} ml</Text>
+            <Text style={styles.logBtnText}>{customModal.logButton.render({ value: value || '0' })}</Text>
           </LinearGradient>
         </Pressable>
       </View>
@@ -115,6 +117,7 @@ export default function DashboardScreen() {
     progressPercent, hydrationScore, streak,
     logs, logIntake, undoLast, lastLogAnimation,
   } = useHydration()
+  const { header, greetings, stats, sections, buttons, toasts } = useIntlayer('dashboard')
 
   const [selectedBeverage, setSelectedBeverage] = useState<BeverageType>('water')
   const [showCustom, setShowCustom]             = useState(false)
@@ -176,9 +179,9 @@ export default function DashboardScreen() {
   const motivationText = getMotivationMessage(progressPercent)
   const timeGreeting   = (() => {
     const h = new Date().getHours()
-    if (h < 12) return 'Good morning ☀️'
-    if (h < 17) return 'Good afternoon 🌤️'
-    return 'Good evening 🌙'
+    if (h < 12) return greetings.morning
+    if (h < 17) return greetings.afternoon
+    return greetings.evening
   })()
 
   const lastLog = logs[logs.length - 1]
@@ -196,13 +199,13 @@ export default function DashboardScreen() {
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View>
           <Text style={styles.greeting}>{timeGreeting}</Text>
-          <Text style={styles.headerTitle}>HydroFlow</Text>
+          <Text style={styles.headerTitle}>{header.title}</Text>
         </View>
         <View style={styles.headerRight}>
           <Animated.View style={scoreStyle}>
             <View style={styles.scoreBadge}>
               <Text style={styles.scoreNum}>{hydrationScore}</Text>
-              <Text style={styles.scoreLabel}>score</Text>
+              <Text style={styles.scoreLabel}>{header.scoreLabel}</Text>
             </View>
           </Animated.View>
           {streak > 0 && <StreakBadge streak={streak} compact />}
@@ -233,20 +236,20 @@ export default function DashboardScreen() {
 
         {/* ── Stats strip ──────────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.statsRow}>
-          <StatCard label="Today" value={`${todayEffectiveTotal}ml`} icon="💧" highlight />
-          <StatCard label="Goal" value={`${dailyGoal}ml`} icon="🎯" />
-          <StatCard label="Remaining" value={`${Math.max(0, dailyGoal - todayEffectiveTotal)}ml`} icon="⏳" />
+          <StatCard label={stats.today} value={`${todayEffectiveTotal}ml`} icon="💧" highlight />
+          <StatCard label={stats.goal} value={`${dailyGoal}ml`} icon="🎯" />
+          <StatCard label={stats.remaining} value={`${Math.max(0, dailyGoal - todayEffectiveTotal)}ml`} icon="⏳" />
         </Animated.View>
 
         {/* ── Beverage selector ─────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(380).springify()}>
-          <Text style={styles.sectionLabel}>Beverage Type</Text>
+          <Text style={styles.sectionLabel}>{sections.beverageType}</Text>
           <BeverageSelector selected={selectedBeverage} onSelect={setSelectedBeverage} />
         </Animated.View>
 
         {/* ── Quick log buttons ─────────────────────────────────────────────── */}
         <Animated.View entering={FadeInDown.delay(440).springify()} style={styles.quickLogSection}>
-          <Text style={styles.sectionLabel}>Quick Log</Text>
+          <Text style={styles.sectionLabel}>{sections.quickLog}</Text>
           <View style={styles.quickLogRow}>
             {QUICK_LOG_PRESETS.map(ml => (
               <QuickLogButton
@@ -261,7 +264,7 @@ export default function DashboardScreen() {
             <Pressable onPress={() => setShowCustom(true)}>
               <View style={styles.customBtn}>
                 <Ionicons name="add" size={22} color={ACCENT} />
-                <Text style={styles.customBtnText}>Custom</Text>
+                <Text style={styles.customBtnText}>{buttons.custom}</Text>
               </View>
             </Pressable>
           </View>
@@ -270,7 +273,7 @@ export default function DashboardScreen() {
         {/* ── Today's log list ──────────────────────────────────────────────── */}
         {logs.length > 0 ? (
           <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.logsSection}>
-            <Text style={styles.sectionLabel}>Today's Log</Text>
+            <Text style={styles.sectionLabel}>{sections.todaysLog}</Text>
             <View style={styles.logList}>
               {[...logs].reverse().slice(0, 8).map((log, i) => {
                 const time = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -312,10 +315,10 @@ export default function DashboardScreen() {
       {showUndo && (
         <View style={[styles.undoToast, { bottom: insets.bottom + 110 }]}>
           <Text style={styles.undoMsg}>
-            {lastLog ? `+${lastLog.ml}ml logged` : 'Logged!'}
+            {lastLog ? toasts.amountLogged.render({ ml: lastLog.ml }) : toasts.logged}
           </Text>
           <Pressable onPress={handleUndo} style={styles.undoBtn}>
-            <Text style={styles.undoBtnText}>Undo</Text>
+            <Text style={styles.undoBtnText}>{buttons.undo}</Text>
           </Pressable>
         </View>
       )}

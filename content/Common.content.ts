@@ -3,7 +3,7 @@ import { t, type DeclarationContent } from 'intlayer'
 const CommonContent = {
   key: 'Common',
   content: {
-    loading:         t({ en: 'Loading...' }),
+    loading:         t({ en: 'Loading... (Intlayer Test)' }),
     error:           t({ en: 'Something went wrong' }),
     tryAgain:        t({ en: 'Try again' }),
     cancel:          t({ en: 'Cancel' }),
